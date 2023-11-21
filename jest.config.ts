@@ -3,7 +3,7 @@ import type { Config } from "jest";
 const config: Config = {
     preset: "ts-jest",
     testEnvironment: "node",
-    testMatch: ["**/**/*.test.ts"],
+    testMatch: ["**/**/*.test.js"],
     verbose: true,
     forceExit: true
     // clearMocks:true

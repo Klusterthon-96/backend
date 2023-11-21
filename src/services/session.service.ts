@@ -84,19 +84,20 @@ class SessionService {
     }
     async getAllSession(pagination: PaginationInput, userId: string) {
         const user = await User.findById(userId);
+        if (!user) throw new CustomError("User not found", 404);
         const { limit = 10, next } = pagination;
-        let query = {};
-        const total = await Session.countDocuments(query);
+        let query = {}; 
+
+        const total = await Session.countDocuments({ userId });
 
         if (next) {
             const [nextId, nextCreatedAt] = next.split("_");
             query = {
-                ...query,
-                $or: [{ createdAt: { $gt: nextCreatedAt } }, { createdAt: nextCreatedAt, _id: { $gt: nextId } }]
+                $or: [{ createdAt: { $gt: new Date(nextCreatedAt) } }, { createdAt: new Date(nextCreatedAt), _id: { $gt: nextId } }]
             };
         }
 
-        const sessions = await Session.find(query, { password: 0, __v: 0 })
+        const sessions = await Session.find({ userId, ...query }, { __v: 0 })
             .sort({ createdAt: 1, _id: 1 })
             .limit(Number(limit) + 1);
 
@@ -157,7 +158,7 @@ class SessionService {
     async deleteAllSession(userId: string) {
         const session = await Session.find({ userId: userId });
         if (!session.length) throw new CustomError("No session found", 404);
-       await Session.deleteMany({ userId: userId });
+        await Session.deleteMany({ userId: userId });
     }
 }
 
