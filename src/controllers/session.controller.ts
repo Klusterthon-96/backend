@@ -55,6 +55,14 @@ class SessionController {
         const result = await sessionService.getAllSession(req.query, req.$user._id);
         res.status(200).send(response("All Session", result));
     }
+    async deleteOneSession(req: Request, res: Response) {
+        await sessionService.deleteOneSession(req.$user._id, req.params.id);
+        res.status(204).end();
+    }
+    async deleteAllSession(req: Request, res: Response) {
+        await sessionService.deleteAllSession(req.$user._id);
+        res.status(204).end();
+    }
 }
 
 export default new SessionController();

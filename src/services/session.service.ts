@@ -149,6 +149,16 @@ class SessionService {
 
         return { temperature, humidity, ph, water_availability, label, country };
     }
+    async deleteOneSession(userId: string, sessionId: string) {
+        const session = await Session.findOne({ userId: userId, _id: sessionId });
+        if (!session) throw new CustomError("Session not found", 404);
+        await session.deleteOne();
+    }
+    async deleteAllSession(userId: string) {
+        const session = await Session.find({ userId: userId });
+        if (!session.length) throw new CustomError("No session found", 404);
+       await Session.deleteMany({ userId: userId });
+    }
 }
 
 export default new SessionService();
