@@ -33,8 +33,8 @@ Before you begin, ensure you have met the following requirements:
 1.  Clone the repository to your local machine:
 
     ```bash
-    git clone https://github.com/Lekejosh/my-node-typescript-template.git
-    cd my-node-typescript-template
+    git clone https://github.com/Lekejosh/klusterthon-96.git
+    cd klusterthon-96
     ```
 
 2.  Install the project dependencies using [npm](https://www.npmjs.com/):

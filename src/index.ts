@@ -1,12 +1,10 @@
 import express from "express";
 import https from "https";
-import http from "http";
 import fs from "fs";
 import path from "path";
 import "express-async-errors";
 import cookieParser from "cookie-parser";
 import session from "express-session";
-import cloudinary from "cloudinary";
 
 export const app = express();
 app.use(
@@ -25,22 +23,13 @@ app.use(
 
 app.use(cookieParser());
 
-/*
- *
- *
- * This is for HTTPS server
- *
- */
+const certificateFolder = "certificate";
 
-// const certificateFolder = "certificate";
+const privateKey = fs.readFileSync(path.join(__dirname, certificateFolder, "private.pem"), "utf8");
+const certificate = fs.readFileSync(path.join(__dirname, certificateFolder, "certificate.crt"), "utf8");
+const credentials = { key: privateKey, cert: certificate };
 
-// const privateKey = fs.readFileSync(path.join(__dirname, certificateFolder, "private.key"), "utf8");
-// const certificate = fs.readFileSync(path.join(__dirname, certificateFolder, "certificate.crt"), "utf8");
-// const credentials = { key: privateKey, cert: certificate };
-
-// const httpsServer = https.createServer(credentials, app);
-
-const httpServer = http.createServer(app);
+const httpsServer = https.createServer(credentials, app);
 
 import preRouteMiddleware from "./middlewares/pre-route.middleware";
 preRouteMiddleware(app);
@@ -51,23 +40,12 @@ app.use(routes);
 import errorMiddleware from "./middlewares/error.middleware";
 errorMiddleware(app);
 
-import { PORT, CLOUDINARY } from "./config";
+import { PORT } from "./config";
 
 import "./database/index";
-import "./workers/imageWorker";
 
-cloudinary.v2.config({
-    cloud_name: CLOUDINARY.NAME,
-    api_key: CLOUDINARY.APIKEY,
-    api_secret: CLOUDINARY.SECRET,
-    secure: true
-});
-// httpsServer.listen(PORT, async () => {
-//     console.log(`:::> 🚀 Server ready at https://localhost:${PORT}`);
-// });
-
-httpServer.listen(PORT, () => {
-    console.log(`HTTP Server is working on http://localhost:${PORT}`);
+httpsServer.listen(PORT, async () => {
+    console.log(`:::> 🚀 Server ready at https://localhost:${PORT}`);
 });
 
 app.on("error", (error) => {

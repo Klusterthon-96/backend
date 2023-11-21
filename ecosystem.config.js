@@ -1,11 +1,10 @@
 module.exports = {
     apps: [
         {
-            name: "my-node-typescript-template",
+            name: "klusterthon-96",
             script: "build/index.js",
             exec_mode: "cluster",
-            instances: "max", // Set instances to "max" to use all available CPUs
-            watch: ".",
+            instances: "max",
             ignore_watch: ["node_modules"]
         }
     ],

@@ -4,7 +4,6 @@ interface UserDataInput {
     password?: string;
     role?: "user" | "admin";
     gender?: string;
-    dateOfBirth?: Date;
     termsOfServices?: boolean;
 }
 
@@ -20,5 +19,4 @@ interface UserCreateInput {
 
 interface UserUpdateInput {
     name?: string;
-    image?: string;
 }

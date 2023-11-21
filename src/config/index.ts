@@ -5,7 +5,7 @@ export const REDIS_HOST_DEV = process.env.REDIS_HOST_DEV;
 export const REDIS_HOST = process.env.REDIS_HOST;
 export const REDIS_PORT = process.env.REDIS_PORT;
 export const BCRYPT_SALT = process.env.BCRYPT_SALT;
-export const APP_NAME = "my-node-typescript-template";
+export const APP_NAME = "klusterthon-96";
 export const JWT_SECRET = process.env.JWT_SECRET;
 
 export const ROLE = {

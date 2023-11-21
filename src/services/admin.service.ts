@@ -1,12 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import User from "./../models/user.model";
 import CustomError from "./../utils/custom-error";
-import { Queue } from "bullmq";
 import client from "../database/redis";
-
-const queue = new Queue("image-upload", {
-    redis: { host: "127.0.0.1", port: 6379 }
-} as any);
 
 class AdminService {
     async create(data: UserCreateInput) {
@@ -57,14 +52,10 @@ class AdminService {
         return user;
     }
 
-    async update(userId: string, data: UserUpdateInput, imagePath: string | undefined) {
+    async update(userId: string, data: UserUpdateInput) {
         const user = await User.findById(userId);
         if (!user) {
             throw new CustomError("User does not exist");
-        }
-
-        if (imagePath) {
-            await queue.add("image-upload", { imagePath, userId });
         }
 
         await user.updateOne(data);

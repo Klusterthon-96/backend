@@ -5,13 +5,8 @@ export interface IUser extends mongoose.Document {
     name: string;
     email: string;
     password: string;
-    image: {
-        url: string;
-        public_id: string;
-    };
     role: "user" | "admin";
     isVerified: boolean;
-    dateOfBirth: Date;
     gender: string;
     termsOfService: boolean;
     createdAt: Date;
@@ -39,20 +34,6 @@ const userSchema: mongoose.Schema = new mongoose.Schema(
         gender: {
             type: String,
             required: true
-        },
-        dateOfBirth: {
-            type: Date,
-            required: true
-        },
-        image: {
-            url: {
-                type: String,
-                required: false
-            },
-            public_id: {
-                type: String,
-                required: false
-            }
         },
         role: {
             type: String,

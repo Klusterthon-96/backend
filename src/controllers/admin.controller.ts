@@ -20,7 +20,7 @@ class UserController {
     }
 
     async update(req: Request, res: Response) {
-        const result = await AdminService.update(req.params.userId, req.body, req.file ? req.file.path : undefined);
+        const result = await AdminService.update(req.params.userId, req.body);
         res.status(200).send(response("user updated", result));
     }
 
