@@ -8,12 +8,14 @@ export interface ISession extends mongoose.Document {
             temperature: number;
             humidity: number;
             ph: number;
-            water_availability: string;
+            water_availability: number;
             label: string;
             country: string;
         };
         result: string;
     }[];
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 const sessionSchema: mongoose.Schema = new mongoose.Schema(
@@ -28,7 +30,7 @@ const sessionSchema: mongoose.Schema = new mongoose.Schema(
         },
         query_result: [
             {
-                query: { temperature: Number, humidity: Number, ph: Number, water_availability: String, label: String, country: String },
+                query: { temperature: Number, humidity: Number, ph: Number, water_availability: Number, label: String, country: String },
                 result: String
             }
         ]

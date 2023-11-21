@@ -131,7 +131,7 @@ class AuthService {
         await client.del(redisData);
 
         const accessToken = JWT.sign({ id: user._id, role: user.role }, JWT_SECRET!, {
-            expiresIn: "15m"
+            expiresIn: "2hr"
         });
 
         refreshToken = crypto.randomBytes(32).toString("hex");

@@ -2,7 +2,7 @@ interface PredictInput {
     temperature: number;
     humidity: number;
     ph: number;
-    water_availability: "low" | "moderate" | "high";
-    label: "Maize" | "Chickpea" | "Kidneybeans" | "Pigeonpeas" | "Mothbeans" | "Mungbeans" | "Blackgram" | "Lentil" | "Watermelon" | "Muskmelon" | "Cotton" | "Jute";
-    country: "Nigeria" | "South Africa" | "Kenya" | "Sudan";
+    water_availability: number;
+    label: "maize" | "chickpea" | "kidneybeans" | "pigeonpeas" | "mothbeans" | "mungbeans" | "blackgram" | "lentil" | "watermelon" | "muskmelon" | "cotton" | "jute";
+    country: "nigeria" | "south africa" | "kenya" | "sudan";
 }
