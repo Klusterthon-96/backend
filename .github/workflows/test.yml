@@ -17,11 +17,10 @@ jobs:
         image: "redis:latest"
         ports:
           - "6379:6379"
-        options: --entrypoint redis-server
 
     strategy:
       matrix:
-        node-version: [18.x]
+        node-version: [14.x]
 
     env:
       PORT: ${{ secrets.PORT }}
@@ -44,8 +43,11 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
+      - name: Install Docker
+        run: sudo apt-get update && sudo apt-get -y install docker.io
+
       - name: Start Redis server
-        run: redis-server --daemonize yes
+        run: docker run -d --name redis-server -p 6379:6379 redis:latest
 
       - name: Wait for Redis to start
         run: sleep 5
