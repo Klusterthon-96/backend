@@ -1,0 +1,46 @@
+name: Unit Tests
+
+on:
+    pull_request:
+        branches:
+            - main
+    push:
+        branches:
+            - main
+
+jobs:
+    tests:
+        runs-on: ubuntu-latest
+
+        strategy:
+            matrix:
+                node-version: [18.x]
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v2
+
+            - name: Use Node.js ${{ matrix.node-version }}
+              uses: actions/setup-node@v1
+              with:
+                  node-version: ${{ matrix.node-version }}
+
+            - name: Set up environment variables
+              run: |
+                  echo "PORT=${{ secrets.PORT }}" >> $GITHUB_ENV
+                  echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> $GITHUB_ENV
+                  echo "MONGODB_URI=${{ secrets.MONGODB_URI }}" >> $GITHUB_ENV
+                  echo "MAILER_USER=${{ secrets.MAILER_USER }}" >> $GITHUB_ENV
+                  echo "MAILER_PORT=${{ secrets.MAILER_PORT }}" >> $GITHUB_ENV
+                  echo "MAILER_SECURE=${{ secrets.MAILER_SECURE }}" >> $GITHUB_ENV
+                  echo "MAILER_PASSWORD=${{ secrets.MAILER_PASSWORD }}" >> $GITHUB_ENV
+                  echo "MAILER_HOST=${{ secrets.MAILER_HOST }}" >> $GITHUB_ENV
+
+            - name: npm install
+              run: npm ci
+
+            - name: npm build
+              run: npm run build
+
+            - name: npm test
+              run: npm test
