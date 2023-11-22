@@ -12,6 +12,13 @@ jobs:
   tests:
     runs-on: ubuntu-latest
 
+    services:
+      redis:
+        image: "redis:latest"
+        ports:
+          - "6379:6379"
+        options: --entrypoint redis-server
+
     strategy:
       matrix:
         node-version: [18.x]
@@ -25,6 +32,8 @@ jobs:
       MAILER_SECURE: ${{ secrets.MAILER_SECURE }}
       MAILER_PASSWORD: ${{ secrets.MAILER_PASSWORD }}
       MAILER_HOST: ${{ secrets.MAILER_HOST }}
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
 
     steps:
       - name: Checkout code
@@ -35,11 +44,17 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: npm install
-        run: npm ci
+      - name: Start Redis server
+        run: redis-server --daemonize yes
 
-      - name: npm build
+      - name: Wait for Redis to start
+        run: sleep 5
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
         run: npm run build
 
-      - name: npm test
+      - name: Run tests
         run: npm test
