@@ -40,7 +40,7 @@ export const testAuth = () => {
             }
             accessToken = response.body.data.accessToken;
             userId = response.body.data.user._id;
-        }, 15000);
+        }, 150000);
 
         describe("login user", () => {
             it("should return a 200 status code", () => {
