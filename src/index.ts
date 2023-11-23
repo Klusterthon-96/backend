@@ -5,6 +5,7 @@ import path from "path";
 import "express-async-errors";
 import cookieParser from "cookie-parser";
 import session from "express-session";
+import treblle from "@treblle/express";
 
 export const app = express();
 app.use(
@@ -33,6 +34,14 @@ const httpsServer = https.createServer(credentials, app);
 
 import preRouteMiddleware from "./middlewares/pre-route.middleware";
 preRouteMiddleware(app);
+
+app.use(
+    treblle({
+        apiKey: process.env.TREBLLE_API_KEY,
+        projectId: process.env.TREBLLE_PROJECT_ID,
+        additionalFieldsToMask: []
+    })
+);
 
 import routes from "./routes";
 app.use(routes);

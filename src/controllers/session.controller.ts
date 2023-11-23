@@ -30,6 +30,7 @@ class SessionController {
             ph: req.body.ph,
             water_availability: req.body.water_availability,
             label: req.body.label.toLowerCase(),
+            season: req.body.season.toLowerCase(),
             country: req.body.country.toLowerCase()
         };
         const result = await sessionService.newSession(predictInput, req.$user._id, sid);
@@ -46,6 +47,7 @@ class SessionController {
             ph: req.body.ph,
             water_availability: req.body.water_availability,
             label: req.body.label.toLowerCase(),
+            season: req.body.season.toLowerCase(),
             country: req.body.country.toLowerCase()
         };
         const result = await sessionService.continueSession(predictInput, req.$user._id, req.params.id);

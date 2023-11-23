@@ -1,0 +1,74 @@
+version: "3.9"
+services:
+  mongo_db:
+    container_name: agro_assistant
+    image: mongo:latest
+    restart: always
+    ports:
+      - "2718:27017"
+    volumes:
+      - mongo_db:/data/db
+    networks:
+      - agro_assistant_server
+
+  redis:
+    container_name: agro_assistant-redis
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - agro_assistant_server
+
+  api:
+    build: .
+    image: lekejosh/agro_assistant
+    restart: always
+    hostname: agro_assistant_server
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "${PORT}:${PORT}"
+    networks:
+      - agro_assistant_server
+    environment:
+      JWT_SECRET: "${JWT_SECRET}"
+      PORT: "${PORT}"
+      MONGODB_URI: "${MONGODB_URI}"
+      DB_NAME: agro_assistant
+      MAILER_HOST: "${MAILER_HOST}"
+      MAILER_PORT: "${MAILER_PORT}"
+      MAILER_USER: "${MAILER_USER}"
+      MAILER_PASSWORD: "${MAILER_PASSWORD}"
+      MAILER_SECURE: "${MAILER_SECURE}"
+      DOCKER: "true"
+      REDIS_PORT: "${REDIS_PORT}"
+      REDIS_HOST: "${REDIS_HOST}"
+    depends_on:
+      - mongo_db
+      - redis
+
+  nginx:
+    build:
+      context: ./nginx
+    container_name: agro_assistant-nginx
+    environment:
+      PORT: "443"
+
+    hostname: nginx
+    ports:
+      - "443:443"
+
+    depends_on:
+      - api
+    networks:
+      - agro_assistant_server
+    volumes:
+      - ./nginx/default.conf:/etc/nginxx/conf.d/default.conf
+
+volumes:
+  mongo_db: {}
+
+networks:
+  agro_assistant_server:
+    external: true

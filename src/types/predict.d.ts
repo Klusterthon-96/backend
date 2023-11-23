@@ -3,6 +3,8 @@ interface PredictInput {
     humidity: number;
     ph: number;
     water_availability: number;
-    label: "maize" | "chickpea" | "kidneybeans" | "pigeonpeas" | "mothbeans" | "mungbeans" | "blackgram" | "lentil" | "watermelon" | "muskmelon" | "cotton" | "jute";
-    country: "nigeria" | "south africa" | "kenya" | "sudan";
+    label: "blackgram" | "chickpea" | "cotton" | "jute" | "kidneybeans" | "lentil" | "maize" | "mothbeans" | "mungbean" | "muskmelon" | "pigeonpeas" | "rice" | "watermelon";
+    season: "rain" | "summer" | "spring" | "winter";
+    country: "kenya" | "nigeria" | "south africa" | "sudan";
 }
+

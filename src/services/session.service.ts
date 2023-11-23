@@ -10,7 +10,7 @@ import User from "../models/user.model";
 class SessionService {
     async newSession(data: PredictInput, userId: string, sessionId: string) {
         try {
-            if (!data.country || !data.humidity || !data.label || !data.ph || !data.temperature || !data.water_availability) {
+            if (!data.country || !data.humidity || !data.label || !data.ph || !data.temperature || !data.water_availability || !data.season) {
                 throw new CustomError("You're not passing in the correct parameters");
             }
 
@@ -86,7 +86,7 @@ class SessionService {
         const user = await User.findById(userId);
         if (!user) throw new CustomError("User not found", 404);
         const { limit = 10, next } = pagination;
-        let query = {}; 
+        let query = {};
 
         const total = await Session.countDocuments({ userId });
 
@@ -116,7 +116,7 @@ class SessionService {
         };
     }
     async convertInputToNumbers(data: PredictInput) {
-        const country: number = data.country === "nigeria" ? 0 : data.country === "south africa" ? 1 : data.country === "kenya" ? 2 : 3;
+        const country: number = data.country === "kenya" ? 0 : data.country === "nigeria" ? 1 : data.country === "south africa" ? 2 : 3;
         const humidity: number = data.humidity >= 0 && data.humidity <= 20 ? 0 : data.humidity <= 40 ? 1 : data.humidity <= 60 ? 2 : data.humidity <= 80 ? 3 : 4;
         const temperature: number = data.temperature <= 19 ? 0 : data.temperature <= 24 ? 1 : data.temperature <= 29 ? 2 : 3;
         const ph: number = data.ph <= 2 ? 0 : data.ph <= 6 ? 2 : data.ph === 7 ? 2 : 3;
@@ -124,31 +124,34 @@ class SessionService {
         const water_availability: number = data.water_availability <= 50 ? 0 : data.water_availability >= 51 && data.water_availability <= 100 ? 1 : 2;
 
         const label: number =
-            data.label === "maize"
+            data.label === "blackgram"
                 ? 0
                 : data.label === "chickpea"
                 ? 1
-                : data.label === "kidneybeans"
+                : data.label === "cotton"
                 ? 2
-                : data.label === "pigeonpeas"
+                : data.label === "jute"
                 ? 3
-                : data.label === "mothbeans"
+                : data.label === "kidneybeans"
                 ? 4
-                : data.label === "mungbeans"
-                ? 5
-                : data.label === "blackgram"
-                ? 6
                 : data.label === "lentil"
+                ? 5
+                : data.label === "maize"
+                ? 6
+                : data.label === "mothbeans"
                 ? 7
-                : data.label === "watermelon"
+                : data.label === "mungbean"
                 ? 8
                 : data.label === "muskmelon"
                 ? 9
-                : data.label === "cotton"
+                : data.label === "pigeonpeas"
                 ? 10
-                : 11;
+                : data.label === "rice"
+                ? 11
+                : 12;
+        const season: number = data.season === "rain" ? 0 : data.season === "summer" ? 1 : data.season === "spring" ? 2 : 3;
 
-        return { temperature, humidity, ph, water_availability, label, country };
+        return { temperature, humidity, ph, water_availability, label, season, country };
     }
     async deleteOneSession(userId: string, sessionId: string) {
         const session = await Session.findOne({ userId: userId, _id: sessionId });
