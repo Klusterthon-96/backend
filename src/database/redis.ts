@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createClient } from "redis";
-import { REDIS_HOST, REDIS_HOST_DEV } from "../config";
+import { REDIS_HOST } from "../config";
 
 const isDocker = process.env.DOCKER === "true";
 
-const HOST = isDocker ? REDIS_HOST_DEV : REDIS_HOST;
+const HOST = isDocker ? "redis" : REDIS_HOST;
+
 
 const logStruct = (func: any, error: any) => {
     return { func, file: "cacheLib", error };

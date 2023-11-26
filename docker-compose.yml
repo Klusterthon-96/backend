@@ -43,7 +43,10 @@ services:
             MAILER_SECURE: "${MAILER_SECURE}"
             DOCKER: "true"
             REDIS_PORT: "${REDIS_PORT}"
-            REDIS_HOST: "${REDIS_HOST}"
+            REDIS_HOST: "redis"
+            ML_URL: "${ML_URL}"
+            TREBLLE_API_KEY: "${TREBLLE_API_KEY}"
+            TREBLLE_PROJECT_ID: "${TREBLLE_PROJECT_ID}"
         depends_on:
             - mongo_db
             - redis
@@ -58,7 +61,6 @@ services:
         hostname: nginx
         ports:
             - "443:443"
-
         depends_on:
             - api
         networks:
