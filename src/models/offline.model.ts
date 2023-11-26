@@ -3,12 +3,12 @@ import mongoose from "mongoose";
 export interface IOffline extends mongoose.Document {
     sessionId: string;
     query: {
-        temperature: string;
-        humidity: string;
-        ph: string;
-        water_availability: string;
+        temperature: number;
+        humidity: number;
+        ph: number;
+        water_availability: number;
         label: string;
-        country: string;
+        Country: string;
     };
     createdAt: Date;
     updatedAt: Date;
@@ -20,12 +20,12 @@ const offlineSchema: mongoose.Schema = new mongoose.Schema(
             type: String
         },
         query: {
-            temperature: String,
-            humidity: String,
-            ph: String,
-            water_availability: String,
+            temperature: Number,
+            humidity: Number,
+            ph: Number,
+            water_availability: Number,
             label: String,
-            country: String
+            Country: String
         }
     },
     {

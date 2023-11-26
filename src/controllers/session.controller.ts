@@ -30,9 +30,12 @@ class SessionController {
             ph: req.body.ph,
             water_availability: req.body.water_availability,
             label: req.body.label.toLowerCase(),
-            // season: req.body.season.toLowerCase(),
-            country: req.body.country.toLowerCase()
+            Country: req.body.country
+                .split(" ")
+                .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(" ")
         };
+
         const result = await sessionService.newSession(predictInput, req.$user._id, sid);
         res.status(200).send(response("new session", result));
     }
@@ -47,8 +50,10 @@ class SessionController {
             ph: req.body.ph,
             water_availability: req.body.water_availability,
             label: req.body.label.toLowerCase(),
-            // season: req.body.season.toLowerCase(),
-            country: req.body.country.toLowerCase()
+            Country: req.body.country
+                .split(" ")
+                .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(" ")
         };
         const result = await sessionService.continueSession(predictInput, req.$user._id, req.params.id);
         res.status(200).send(response("Session", result));

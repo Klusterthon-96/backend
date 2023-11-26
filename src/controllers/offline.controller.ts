@@ -1,6 +1,8 @@
 /* eslint-disable no-var */
 import type { Request, Response } from "express";
 import Offline from "../models/offline.model";
+import axios from "axios";
+import { URL } from "../config";
 
 class OfflineController {
     async start(req: Request, res: Response) {
@@ -10,8 +12,7 @@ class OfflineController {
             ph: "",
             water_availability: "",
             label: "",
-            season: "",
-            country: ""
+            Country: ""
         };
 
         let session = await Offline.findOne({ sessionId: req.body.sessionId });
@@ -25,86 +26,145 @@ class OfflineController {
         let response = "";
 
         if (req.body.phoneNumber.startsWith("+234")) {
-            session!.query.country = "nigeria";
+            session!.query.Country = "Nigeria";
             await session!.save();
         } else if (req.body.phoneNumber.startsWith("+27")) {
-            session!.query.country = "south africa";
+            session!.query.Country = "South Africa";
             await session!.save();
         } else if (req.body.phoneNumber.startsWith("+254")) {
-            session!.query.country = "kenya";
+            session!.query.Country = "Kenya";
             await session!.save();
         } else if (req.body.phoneNumber.startsWith("+249")) {
-            session!.query.country = "sudan";
+            session!.query.Country = "Sudan";
             await session!.save();
         }
-
         if (text.length === 12 || text.length === 11) {
-            const label = text.split("*")[5];
-            session!.query.label = label;
-            await session!.save();
-            const query = await Offline.findOne({ sessionId: req.body.sessionId });
-            var result = query?.query.temperature;
+            if (session && session.query) {
+                const label = text.split("*")[5];
+                if (label === "1") {
+                    session.query.label = "blackgram";
+                    await session.save();
+                } else if (label === "2") {
+                    session.query.label = "chickpea";
+                    await session.save();
+                } else if (label === "3") {
+                    session.query.label = "cotton";
+                    await session.save();
+                } else if (label === "4") {
+                    session.query.label = "jute";
+                    await session.save();
+                } else if (label === "5") {
+                    session.query.label = "kidneybeans";
+                    await session.save();
+                } else if (label === "6") {
+                    session.query.label = "lentil";
+                    await session.save();
+                } else if (label === "7") {
+                    session.query.label = "maize";
+                    await session.save();
+                } else if (label === "8") {
+                    session.query.label = "mothbeans";
+                    await session.save();
+                } else if (label === "9") {
+                    session.query.label = "mungbean";
+                    await session.save();
+                } else if (label === "10") {
+                    session.query.label = "muskmelon";
+                    await session.save();
+                } else if (label === "11") {
+                    session.query.label = "pigeonpeas";
+                    await session.save();
+                } else if (label === "12") {
+                    session.query.label = "rice";
+                    await session.save();
+                } else if (label === "13") {
+                    session.query.label = "watermelon";
+                    await session.save();
+                }
+                const query = await Offline.findOne({ sessionId: req.body.sessionId });
+
+                if (query) {
+                    console.log(query);
+                    try {
+                        const response = await axios.post(URL.ML_URL!, {
+                            temperature: query.query.temperature,
+                            humidity: query.query.humidity,
+                            ph: query.query.ph,
+                            water_availability: query.query.water_availability,
+                            label: query.query.label,
+                            Country: query.query.Country
+                        });
+                        console.log(response.data.harvest_season);
+                        var result = response.data.harvest_season;
+                    } catch (error) {
+                        console.log(error);
+                    }
+                }
+            }
         }
 
         async function handleTemperatureInput(temperatureCode: string) {
             if (temperatureCode === "1") {
-                session!.query.temperature = "Cool: 15-18.99";
+                session!.query.temperature = 16;
                 await session!.save();
             } else if (temperatureCode === "2") {
-                session!.query.temperature = "Mild: 19-23.99";
+                session!.query.temperature = 21;
                 await session!.save();
             } else if (temperatureCode === "3") {
-                session!.query.temperature = "Warm: 24-28.99";
+                session!.query.temperature = 25;
                 await session!.save();
             } else if (temperatureCode === "4") {
-                session!.query.temperature = "Hot: 29 and above";
+                session!.query.temperature = 30;
                 await session!.save();
             }
         }
 
         async function handleHumidityInput(humidityCode: string) {
             if (humidityCode === "1") {
-                session!.query.humidity = "Low: 0-19.99";
+                session!.query.humidity = 10;
                 await session!.save();
             } else if (humidityCode === "2") {
-                session!.query.humidity = "Moderate: 20-39.99";
+                session!.query.humidity = 22;
                 await session!.save();
             } else if (humidityCode === "3") {
-                session!.query.humidity = "Average: 40-59.99";
+                session!.query.humidity = 43;
                 await session!.save();
             } else if (humidityCode === "4") {
-                session!.query.humidity = "Very High: 80 and above";
+                session!.query.humidity = 70;
+                await session!.save();
+            } else if (humidityCode === "5") {
+                session!.query.humidity = 85;
                 await session!.save();
             }
         }
 
         async function handlePhInput(phCode: string) {
             if (phCode === "1") {
-                session!.query.ph = "Strongly Acidic: 0-1.99";
+                session!.query.ph = 1.9;
                 await session!.save();
             } else if (phCode === "2") {
-                session!.query.ph = "Moderately Acidic: 2-5.99";
+                session!.query.ph = 4;
                 await session!.save();
             } else if (phCode === "3") {
-                session!.query.ph = "Neutral: 6-6.99";
+                session!.query.ph = 6.5;
                 await session!.save();
             } else if (phCode === "4") {
-                session!.query.ph = "Moderately Alkaline: 7-9.99";
+                session!.query.ph = 8;
                 await session!.save();
             } else if (phCode === "5") {
-                session!.query.ph = "Highly Alkaline: 10 and above";
+                session!.query.ph = 11;
                 await session!.save();
             }
         }
         async function handleWaterInput(waterCode: string) {
             if (waterCode === "1") {
-                session!.query.water_availability = "Low: 0-49.99";
+                session!.query.water_availability = 30;
                 await session!.save();
             } else if (waterCode === "2") {
-                session!.query.water_availability = "Moderate: 50-99.99";
+                session!.query.water_availability = 60;
                 await session!.save();
             } else if (waterCode === "3") {
-                session!.query.water_availability = "High: 100 and above";
+                session!.query.water_availability = 105;
                 await session!.save();
             }
         }
@@ -129,7 +189,8 @@ class OfflineController {
             response += "1. Low: 0-19.99 \n";
             response += "2. Moderate: 20-39.99\n";
             response += "3. Average: 40-59.99\n";
-            response += "4. Very High: 80 and above";
+            response += "4. High: 60-79.99\n";
+            response += "5. Very High: 80 and above";
         } else if (text.startsWith("1") && text.length === 5) {
             const humidityCode = text.split("*")[2];
             handleHumidityInput(humidityCode);

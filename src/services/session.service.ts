@@ -1,58 +1,53 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import Session from "../models/session.model";
 import JWT, { JwtPayload } from "jsonwebtoken";
-import { JWT_SECRET } from "../config";
+import { JWT_SECRET, URL } from "../config";
 import CustomError from "../utils/custom-error";
-import { spawn } from "child_process";
-import mongoose, { Types } from "mongoose";
 import User from "../models/user.model";
+import axios from "axios";
+import { Types } from "mongoose";
 
 class SessionService {
     async newSession(data: PredictInput, userId: string, sessionId: string) {
         try {
-            if (!data.country || !data.humidity || !data.label || !data.ph || !data.temperature || !data.water_availability) {
+            if (!data.Country || !data.humidity || !data.label || !data.ph || !data.temperature || !data.water_availability) {
                 throw new CustomError("You're not passing in the correct parameters");
             }
 
             const decoded = JWT.verify(sessionId, JWT_SECRET!) as JwtPayload;
-            // let session = await Session.findOne({ userId: userId, _id: decoded.id });
+            let session = await Session.findOne({ userId: userId, _id: decoded.id });
 
-            const query = await this.convertInputToNumbers(data);
-            console.log(query);
-
-            const season = await new Promise<string>((resolve, reject) => {
-                const pythonProcess = spawn("python3", ["dist/ML/script.py", JSON.stringify(data)]);
-                let result: number;
-
-                pythonProcess.stdout.on("data", (data) => {
-                    console.log(data.toString());
-                    result = parseInt(data.toString());
-                });
-
-                pythonProcess.stderr.on("data", (data) => {
-                    // Handle errors from the Python script
-                    console.error(`Error from Python script: ${data}`);
-                    return;
-                    // res.status(500).send("Internal Server Error");
-                });
-
-                pythonProcess.on("close", async () => {
-                    console.log(result);
-                    const season = result === 0 ? "Rainy" : result === 1 ? "Spring" : result === 2 ? "Summer" : "Winter";
-                    // if (session) {
-                    //     session.query_result.push({ query: data, result: season });
-                    //     await session.save();
-                    // } else {
-                    //     const sessionIdAsObjectId = new Types.ObjectId(decoded.id);
-
-                    //     session = await Session.create({ _id: sessionIdAsObjectId, userId: userId, query_result: [{ query: data, season }] });
-                    // }
-                    resolve(season);
-                });
+            const query = await this.convertInputToNumbers(data.temperature, data.humidity, data.ph, data.water_availability);
+            if (query.humiNumber === undefined || query.phNumber === undefined || query.tempNumber === undefined || query.waterNumber === undefined)
+                throw new CustomError("You're not passing the correct parameters");
+            const request = {
+                temperature: query.tempNumber,
+                humidity: query.humiNumber,
+                ph: query.phNumber,
+                water_availability: query.waterNumber,
+                label: data.label,
+                Country: data.Country
+            };
+            const response = await axios.post(URL.ML_URL!, {
+                temperature: query.tempNumber,
+                humidity: query.humiNumber,
+                ph: query.phNumber,
+                water_availability: query.waterNumber,
+                label: data.label,
+                Country: data.Country
             });
-            return { season };
+            if (session) {
+                session.query_result.push({ query: request, result: response.data.harvest_season });
+                await session.save();
+            } else {
+                const sessionIdAsObjectId = new Types.ObjectId(decoded.id);
+
+                session = await Session.create({ _id: sessionIdAsObjectId, userId: userId, query_result: [{ query: request, result: response.data.harvest_season }] });
+            }
+
+            return { result: response.data.harvest_season };
         } catch (error) {
-            throw new CustomError("Error Generating Result", 500);
+            throw new CustomError("Error Generating prediction", 500);
         }
     }
     async getSession(userId: string, sessionId: string) {
@@ -64,30 +59,37 @@ class SessionService {
     }
     async continueSession(data: PredictInput, userId: string, sessionId: string) {
         try {
-            if (!data.country || !data.humidity || !data.label || !data.ph || !data.temperature || !data.water_availability) {
+            if (!data.Country || !data.humidity || !data.label || !data.ph || !data.temperature || !data.water_availability) {
                 throw new CustomError("You're not passing in the correct parameters");
             }
             const session = await Session.findOne({ userId: userId, _id: sessionId });
-            if (!session) throw new CustomError("Session Not found", 404);
 
-            const query = await this.convertInputToNumbers(data);
+            if (!session || session === null) throw new CustomError("Session Not found", 404);
 
-            const season = await new Promise<string>((resolve, reject) => {
-                const pythonProcess = spawn("python3", ["dist/ML/script.py", JSON.stringify(query)]);
-                let result: number;
+            const query = await this.convertInputToNumbers(data.temperature, data.humidity, data.ph, data.water_availability);
 
-                pythonProcess.stdout.on("data", (data) => {
-                    result = parseInt(data.toString());
-                });
+            if (query.humiNumber === undefined || query.phNumber === undefined || query.tempNumber === undefined || query.waterNumber === undefined)
+                throw new CustomError("You're not passing the correct parameters");
+            const request = {
+                temperature: query.tempNumber,
+                humidity: query.humiNumber,
+                ph: query.phNumber,
+                water_availability: query.waterNumber,
+                label: data.label,
+                Country: data.Country
+            };
 
-                pythonProcess.on("close", async () => {
-                    const season = result === 0 ? "Rainy" : result === 1 ? "Spring" : result === 2 ? "Summer" : "Winter";
-                    session.query_result.push({ query: data, result: season });
-                    await session.save();
-                    resolve(season);
-                });
+            const response = await axios.post(URL.ML_URL!, {
+                temperature: query.tempNumber,
+                humidity: query.humiNumber,
+                ph: query.phNumber,
+                water_availability: query.waterNumber,
+                label: data.label,
+                Country: data.Country
             });
-            return { season };
+            session.query_result.push({ query: request, result: response.data.harvest_season });
+            await session.save();
+            return { result: response.data.harvest_season };
         } catch (error) {
             throw new CustomError("Error Generating Result", 500);
         }
@@ -125,52 +127,15 @@ class SessionService {
             }
         };
     }
-    async convertInputToNumbers(data: PredictInput) {
-        const country: number = data.country === "kenya" ? 0 : data.country === "nigeria" ? 1 : data.country === "south africa" ? 2 : 3;
-        const humidity: number =
-            data.humidity >= 0 && data.humidity < 20
-                ? 0
-                : data.humidity >= 20 && data.humidity < 40
-                ? 1
-                : data.humidity >= 40 && data.humidity < 60
-                ? 2
-                : data.humidity >= 60 && data.humidity < 80
-                ? 3
-                : 4;
-        const temperature: number = data.temperature < 19 ? 0 : data.temperature >= 19 && data.temperature < 24 ? 1 : data.temperature >= 24 && data.temperature < 29 ? 2 : 3;
-        const ph: number = data.ph >= 0 && data.ph < 2 ? 0 : data.ph >= 2 && data.ph < 6 ? 1 : data.ph >= 6 && data.ph < 7 ? 2 : data.ph >= 7 && data.ph < 10 ? 3 : 4;
-
-        const water_availability: number = data.water_availability < 50 ? 0 : data.water_availability >= 50 && data.water_availability < 100 ? 1 : 2;
-
-        const label: number =
-            data.label === "blackgram"
-                ? 0
-                : data.label === "chickpea"
-                ? 1
-                : data.label === "cotton"
-                ? 2
-                : data.label === "jute"
-                ? 3
-                : data.label === "kidneybeans"
-                ? 4
-                : data.label === "lentil"
-                ? 5
-                : data.label === "maize"
-                ? 6
-                : data.label === "mothbeans"
-                ? 7
-                : data.label === "mungbean"
-                ? 8
-                : data.label === "muskmelon"
-                ? 9
-                : data.label === "pigeonpeas"
-                ? 10
-                : data.label === "rice"
-                ? 11
-                : 12;
-        // const season: number = data.season === "rain" ? 0 : data.season === "summer" ? 1 : data.season === "spring" ? 2 : 3;
-
-        return { temperature, humidity, ph, water_availability, label, country };
+    async convertInputToNumbers(temperature: string, humidity: string, ph: string, water: string) {
+        console.log(temperature, water, humidity, ph);
+        const tempNumber: number | undefined = temperature === "cool" ? 16 : temperature === "mild" ? 21 : temperature === "warm" ? 26 : temperature === "hot" ? 30 : undefined;
+        const humiNumber: number | undefined =
+            humidity === "low" ? 10 : humidity === "moderate" ? 30 : humidity === "average" ? 45 : humidity === "high" ? 81 : humidity === "very high" ? 90 : undefined;
+        const phNumber: number | undefined =
+            ph === "strongly acidic" ? 1 : ph === "moderately acidic" ? 3 : ph === "neutral" ? 6.5 : ph === "moderately alkaline" ? 8 : ph === "highly alkaline" ? 11 : undefined;
+        const waterNumber: number | undefined = water === "low" ? 30 : water === "moderate" ? 60 : water === "high" ? 120 : undefined;
+        return { tempNumber, humiNumber, phNumber, waterNumber };
     }
     async deleteOneSession(userId: string, sessionId: string) {
         const session = await Session.findOne({ userId: userId, _id: sessionId });

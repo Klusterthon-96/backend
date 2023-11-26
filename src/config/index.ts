@@ -14,7 +14,8 @@ export const ROLE = {
 };
 
 export const URL = {
-    CLIENT_URL: process.env.CLIENT_URL || "http://localhost:3000"
+    CLIENT_URL: process.env.CLIENT_URL || "http://localhost:3000",
+    ML_URL: process.env.ML_URL
 };
 export const MAILER = {
     USER: process.env.MAILER_USER,

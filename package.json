@@ -24,9 +24,9 @@
     "license": "MIT",
     "dependencies": {
         "@treblle/express": "^0.0.7",
+        "axios": "^1.6.2",
         "bcryptjs": "^2.4.3",
         "bullmq": "^4.12.2",
-        "child_process": "^1.0.2",
         "cookie": "^0.5.0",
         "cookie-parser": "^1.4.6",
         "cors": "^2.8.5",
