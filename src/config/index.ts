@@ -1,6 +1,6 @@
 export const PORT = process.env.PORT;
 export const MONGO_URL = process.env.MONGODB_URI || "";
-export const MONGODB_URI_DEV = process.env.MONGODB_URI_DEV || "";
+export const MONGODB_URI_DEV = process.env.MONGODB_URI_DEV
 export const REDIS_HOST_DEV = process.env.REDIS_HOST_DEV;
 export const REDIS_HOST = process.env.REDIS_HOST;
 export const REDIS_PORT = process.env.REDIS_PORT;
