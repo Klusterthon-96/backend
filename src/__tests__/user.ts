@@ -8,7 +8,6 @@ export const userTest = () => {
             it("should return a 200 status code", async () => {
                 const response = await supertest(app).get("/api/v1/user/me").set("Authorization", `Bearer ${accessToken}`).send();
                 expect(response.status).toBe(200);
-
             });
         });
         describe("update profile", () => {

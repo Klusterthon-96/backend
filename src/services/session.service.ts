@@ -10,33 +10,43 @@ import User from "../models/user.model";
 class SessionService {
     async newSession(data: PredictInput, userId: string, sessionId: string) {
         try {
-            if (!data.country || !data.humidity || !data.label || !data.ph || !data.temperature || !data.water_availability || !data.season) {
+            if (!data.country || !data.humidity || !data.label || !data.ph || !data.temperature || !data.water_availability) {
                 throw new CustomError("You're not passing in the correct parameters");
             }
 
             const decoded = JWT.verify(sessionId, JWT_SECRET!) as JwtPayload;
-            let session = await Session.findOne({ userId: userId, _id: decoded.id });
+            // let session = await Session.findOne({ userId: userId, _id: decoded.id });
 
             const query = await this.convertInputToNumbers(data);
+            console.log(query);
 
             const season = await new Promise<string>((resolve, reject) => {
-                const pythonProcess = spawn("python3", ["dist/ML/script.py", JSON.stringify(query)]);
+                const pythonProcess = spawn("python3", ["dist/ML/script.py", JSON.stringify(data)]);
                 let result: number;
 
                 pythonProcess.stdout.on("data", (data) => {
+                    console.log(data.toString());
                     result = parseInt(data.toString());
                 });
 
-                pythonProcess.on("close", async () => {
-                    const season = result === 0 ? "Rainy" : result === 1 ? "Winter" : result === 2 ? "Spring" : "Summer";
-                    if (session) {
-                        session.query_result.push({ query: data, result: season });
-                        await session.save();
-                    } else {
-                        const sessionIdAsObjectId = new Types.ObjectId(decoded.id);
+                pythonProcess.stderr.on("data", (data) => {
+                    // Handle errors from the Python script
+                    console.error(`Error from Python script: ${data}`);
+                    return;
+                    // res.status(500).send("Internal Server Error");
+                });
 
-                        session = await Session.create({ _id: sessionIdAsObjectId, userId: userId, query_result: [{ query: data, season }] });
-                    }
+                pythonProcess.on("close", async () => {
+                    console.log(result);
+                    const season = result === 0 ? "Rainy" : result === 1 ? "Spring" : result === 2 ? "Summer" : "Winter";
+                    // if (session) {
+                    //     session.query_result.push({ query: data, result: season });
+                    //     await session.save();
+                    // } else {
+                    //     const sessionIdAsObjectId = new Types.ObjectId(decoded.id);
+
+                    //     session = await Session.create({ _id: sessionIdAsObjectId, userId: userId, query_result: [{ query: data, season }] });
+                    // }
                     resolve(season);
                 });
             });
@@ -71,7 +81,7 @@ class SessionService {
                 });
 
                 pythonProcess.on("close", async () => {
-                    const season = result === 0 ? "Rainy" : result === 1 ? "Winter" : result === 2 ? "Spring" : "Summer";
+                    const season = result === 0 ? "Rainy" : result === 1 ? "Spring" : result === 2 ? "Summer" : "Winter";
                     session.query_result.push({ query: data, result: season });
                     await session.save();
                     resolve(season);
@@ -117,11 +127,20 @@ class SessionService {
     }
     async convertInputToNumbers(data: PredictInput) {
         const country: number = data.country === "kenya" ? 0 : data.country === "nigeria" ? 1 : data.country === "south africa" ? 2 : 3;
-        const humidity: number = data.humidity >= 0 && data.humidity <= 20 ? 0 : data.humidity <= 40 ? 1 : data.humidity <= 60 ? 2 : data.humidity <= 80 ? 3 : 4;
-        const temperature: number = data.temperature <= 19 ? 0 : data.temperature <= 24 ? 1 : data.temperature <= 29 ? 2 : 3;
-        const ph: number = data.ph <= 2 ? 0 : data.ph <= 6 ? 2 : data.ph === 7 ? 2 : 3;
+        const humidity: number =
+            data.humidity >= 0 && data.humidity < 20
+                ? 0
+                : data.humidity >= 20 && data.humidity < 40
+                ? 1
+                : data.humidity >= 40 && data.humidity < 60
+                ? 2
+                : data.humidity >= 60 && data.humidity < 80
+                ? 3
+                : 4;
+        const temperature: number = data.temperature < 19 ? 0 : data.temperature >= 19 && data.temperature < 24 ? 1 : data.temperature >= 24 && data.temperature < 29 ? 2 : 3;
+        const ph: number = data.ph >= 0 && data.ph < 2 ? 0 : data.ph >= 2 && data.ph < 6 ? 1 : data.ph >= 6 && data.ph < 7 ? 2 : data.ph >= 7 && data.ph < 10 ? 3 : 4;
 
-        const water_availability: number = data.water_availability <= 50 ? 0 : data.water_availability >= 51 && data.water_availability <= 100 ? 1 : 2;
+        const water_availability: number = data.water_availability < 50 ? 0 : data.water_availability >= 50 && data.water_availability < 100 ? 1 : 2;
 
         const label: number =
             data.label === "blackgram"
@@ -149,9 +168,9 @@ class SessionService {
                 : data.label === "rice"
                 ? 11
                 : 12;
-        const season: number = data.season === "rain" ? 0 : data.season === "summer" ? 1 : data.season === "spring" ? 2 : 3;
+        // const season: number = data.season === "rain" ? 0 : data.season === "summer" ? 1 : data.season === "spring" ? 2 : 3;
 
-        return { temperature, humidity, ph, water_availability, label, season, country };
+        return { temperature, humidity, ph, water_availability, label, country };
     }
     async deleteOneSession(userId: string, sessionId: string) {
         const session = await Session.findOne({ userId: userId, _id: sessionId });
