@@ -65,7 +65,7 @@ class MailService {
 
     async sendPasswordResetMail(link: string) {
         const subject = "Reset Your Agro Assistant Password";
-        const content = `Dear ${this.user.name},\n\nWe've received a request to reset your Agro Assistant password. To proceed with the password reset, please follow this link:\n\n${link}\n\nThis link will redirect you to a secure page where you can set a new password for your Agro Assistant account. Please choose a strong password that is easy to remember but difficult to guess.\n\n<b>If you didn't initiate a password reset, please disregard this email. Your password will remain unchanged.</b>\n\nSincerely,\nThe Agro Assistant Team`;
+        const content = `Dear ${this.user.name},\n\nWe've received a request to reset your Agro Assistant password. To proceed with the password reset, please follow this link:\n\n${link}\n\nThis link will redirect you to a secure page where you can set a new password for your Agro Assistant account. Please choose a strong password that is easy to remember but difficult to guess.\n\nIf you didn't initiate a password reset, please disregard this email. Your password will remain unchanged.\n\nSincerely,\nThe Agro Assistant Team`;
         const recipient = this.user.email;
 
         return await this.send(subject, content, recipient);
