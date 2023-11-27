@@ -10,7 +10,9 @@ class AuthController {
         const expires = new Date(Date.now() + thirtyDaysInSeconds * 1000);
         res.cookie("refreshToken", result.refreshToken, {
             expires,
-            httpOnly: true
+            httpOnly: true,
+            sameSite: "none",
+            secure: true
         });
         const data = {
             user: result.user,
@@ -25,7 +27,9 @@ class AuthController {
         const expires = new Date(Date.now() + thirtyDaysInSeconds * 1000);
         res.cookie("refreshToken", result.refreshToken, {
             expires,
-            httpOnly: true
+            httpOnly: true,
+            sameSite: "none",
+            secure: true
         });
         const data = {
             user: result.user,
@@ -43,7 +47,9 @@ class AuthController {
 
         res.cookie("refreshToken", result.refreshTokenJWTNew, {
             expires,
-            httpOnly: true
+            httpOnly: true,
+            sameSite: "none",
+            secure: true
         });
 
         const data = {

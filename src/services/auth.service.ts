@@ -24,6 +24,7 @@ class AuthService {
 
         user = await new User(data).save();
 
+        await new MailService(user).welcomeMail();
         await this.requestEmailVerification(user._id.toString());
 
         const authTokens = await this.generateAuthTokens({

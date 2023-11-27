@@ -30,7 +30,13 @@ router.use("/api/v1/session", SessionRoute);
 router.use("/api/v1/offline", offline);
 
 router.get("/", (req: Request, res: Response) => {
-    return res.status(200).json({ message: "You're not meant to be here :)" });
+    return res.status(200).json({
+        message: "You probably shouldn't be here, but...",
+        data: {
+            service: "agro_assistant-api",
+            version: "1.0"
+        }
+    });
 });
 
 export default router;
