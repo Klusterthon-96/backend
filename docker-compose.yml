@@ -50,6 +50,7 @@ services:
         depends_on:
             - mongo_db
             - redis
+        
 
     nginx:
         build:
