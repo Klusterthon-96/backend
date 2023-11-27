@@ -1,8 +1,8 @@
 import express from "express";
-import https from "https";
+// import https from "https";
 import http from "http";
-import fs from "fs";
-import path from "path";
+// import fs from "fs";
+// import path from "path";
 import "express-async-errors";
 import cookieParser from "cookie-parser";
 import session from "express-session";
@@ -25,13 +25,13 @@ app.use(
 
 app.use(cookieParser());
 
-const certificateFolder = "certificate";
+// const certificateFolder = "certificate";
 
-const privateKey = fs.readFileSync(path.join(__dirname, certificateFolder, "private.pem"), "utf8");
-const certificate = fs.readFileSync(path.join(__dirname, certificateFolder, "certificate.crt"), "utf8");
-const credentials = { key: privateKey, cert: certificate };
+// const privateKey = fs.readFileSync(path.join(__dirname, certificateFolder, "private.pem"), "utf8");
+// const certificate = fs.readFileSync(path.join(__dirname, certificateFolder, "certificate.crt"), "utf8");
+// const credentials = { key: privateKey, cert: certificate };
 
-const httpsServer = https.createServer(credentials, app);
+// const httpsServer = https.createServer(credentials, app);
 const httpServer = http.createServer(app);
 
 import preRouteMiddleware from "./middlewares/pre-route.middleware";
@@ -51,16 +51,16 @@ app.use(routes);
 import errorMiddleware from "./middlewares/error.middleware";
 errorMiddleware(app);
 
-import { PORT, HTTP } from "./config";
+import {  HTTP } from "./config";
 
 import "./database/index";
 
 httpServer.listen(HTTP, async () => {
     console.log(`:::> 🚀 Server ready at http://localhost:${HTTP}`);
 });
-httpsServer.listen(PORT, async () => {
-    console.log(`:::> 🚀 Server ready at https://localhost:${PORT}`);
-});
+// httpsServer.listen(PORT, async () => {
+//     console.log(`:::> 🚀 Server ready at https://localhost:${PORT}`);
+// });
 
 app.on("error", (error) => {
     console.error(`<::: An error occurred on the server: \n ${error}`);
