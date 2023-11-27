@@ -37,8 +37,8 @@ class OfflineController {
         } else if (req.body.phoneNumber.startsWith("+249")) {
             session!.query.Country = "Sudan";
             await session!.save();
-        }else{
-            res.end()
+        } else {
+            res.end();
         }
         if (text.length === 12 || text.length === 11) {
             if (session && session.query) {
@@ -82,8 +82,8 @@ class OfflineController {
                 } else if (label === "13") {
                     session.query.label = "watermelon";
                     await session.save();
-                }else{
-                    res.end()
+                } else {
+                    res.end();
                 }
                 const query = await Offline.findOne({ sessionId: req.body.sessionId });
 
@@ -118,8 +118,8 @@ class OfflineController {
             } else if (temperatureCode === "4") {
                 session!.query.temperature = 30;
                 await session!.save();
-            }else{
-                res.end()
+            } else {
+                res.end();
             }
         }
 
@@ -139,8 +139,8 @@ class OfflineController {
             } else if (humidityCode === "5") {
                 session!.query.humidity = 85;
                 await session!.save();
-            }else{
-                res.end()
+            } else {
+                res.end();
             }
         }
 
@@ -160,8 +160,8 @@ class OfflineController {
             } else if (phCode === "5") {
                 session!.query.ph = 11;
                 await session!.save();
-            }else{
-                res.end()
+            } else {
+                res.end();
             }
         }
         async function handleWaterInput(waterCode: string) {
@@ -174,8 +174,8 @@ class OfflineController {
             } else if (waterCode === "3") {
                 session!.query.water_availability = 105;
                 await session!.save();
-            }else{
-                 res.end();
+            } else {
+                res.end();
             }
         }
 
