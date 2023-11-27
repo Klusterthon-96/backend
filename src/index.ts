@@ -10,6 +10,8 @@ import treblle from "@treblle/express";
 import rateLimiter from "express-rate-limit";
 
 export const app = express();
+
+app.set("trust proxy", true);
 app.use(
     session({
         secret: "348d1911e5741ff7d5a20bb384d1adb2c0fb255ecf4263ba25435f17d47e4e18",
