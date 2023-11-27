@@ -231,7 +231,7 @@ class AuthService {
             expiresAt: Date.now() + ms("1h")
         }).save();
 
-        const link = `${URL.CLIENT_URL}/reset-password?uid=${user._id}&resetToken=${resetToken}`;
+        const link = `${URL.CLIENT_URL}/auth/reset-password/${user._id}/${resetToken}`;
 
         // Send Mail
         await new MailService(user).sendPasswordResetMail(link);
