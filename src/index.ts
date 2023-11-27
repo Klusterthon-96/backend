@@ -1,5 +1,6 @@
 import express from "express";
 import https from "https";
+import http from "http";
 import fs from "fs";
 import path from "path";
 import "express-async-errors";
@@ -31,6 +32,7 @@ const certificate = fs.readFileSync(path.join(__dirname, certificateFolder, "cer
 const credentials = { key: privateKey, cert: certificate };
 
 const httpsServer = https.createServer(credentials, app);
+const httpServer = http.createServer(app);
 
 import preRouteMiddleware from "./middlewares/pre-route.middleware";
 preRouteMiddleware(app);
@@ -49,10 +51,13 @@ app.use(routes);
 import errorMiddleware from "./middlewares/error.middleware";
 errorMiddleware(app);
 
-import { PORT } from "./config";
+import { PORT, HTTP } from "./config";
 
 import "./database/index";
 
+httpServer.listen(HTTP, async () => {
+    console.log(`:::> 🚀 Server ready at http://localhost:${HTTP}`);
+});
 httpsServer.listen(PORT, async () => {
     console.log(`:::> 🚀 Server ready at https://localhost:${PORT}`);
 });
