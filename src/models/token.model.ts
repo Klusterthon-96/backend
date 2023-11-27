@@ -26,7 +26,7 @@ const tokenSchema: mongoose.Schema = new mongoose.Schema({
         type: Date,
         required: true,
         default: Date.now,
-        expires: 60 
+        expires: 60
     }
 });
 

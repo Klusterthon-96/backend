@@ -19,12 +19,13 @@ services:
         volumes:
             - .:/usr/src/app
         ports:
-            - "${PORT}:${PORT}"
+            - "${HTTP_PORT}:${HTTP_PORT}"
         networks:
             - agro_assistant_server
         environment:
             JWT_SECRET: "${JWT_SECRET}"
             PORT: "${PORT}"
+            HTTP: "${HTTP_PORT}"
             MONGODB_URI: "${MONGODB_URI}"
             DB_NAME: agro_assistant
             MAILER_HOST: "${MAILER_HOST}"
@@ -38,7 +39,6 @@ services:
             TREBLLE_PROJECT_ID: "${TREBLLE_PROJECT_ID}"
         depends_on:
             - mongo_db
-        
 
     nginx:
         build:

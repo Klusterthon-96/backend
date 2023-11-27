@@ -7,8 +7,6 @@ export interface IUser extends mongoose.Document {
     password: string;
     role: "user" | "admin";
     isVerified: boolean;
-    gender: string;
-    termsOfService: boolean;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -31,10 +29,6 @@ const userSchema: mongoose.Schema = new mongoose.Schema(
             required: true,
             select: false
         },
-        gender: {
-            type: String,
-            required: true
-        },
         role: {
             type: String,
             required: true,
@@ -46,13 +40,7 @@ const userSchema: mongoose.Schema = new mongoose.Schema(
             type: Boolean,
             required: true,
             default: false
-        },
-        termsOfService: {
-            type: Boolean,
-            required: true,
-            default: true
-        },
-      
+        }
     },
     {
         timestamps: true

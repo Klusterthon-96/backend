@@ -51,7 +51,7 @@ app.use(routes);
 import errorMiddleware from "./middlewares/error.middleware";
 errorMiddleware(app);
 
-import {  HTTP } from "./config";
+import { HTTP } from "./config";
 
 import "./database/index";
 

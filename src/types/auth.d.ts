@@ -3,8 +3,6 @@ interface RegisterInput {
     email: string;
     password: string;
     dateOfBirth: Date;
-    gender: string;
-    termsOfService: boolean;
 }
 
 interface LoginInput {

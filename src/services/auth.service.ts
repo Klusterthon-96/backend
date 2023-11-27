@@ -11,7 +11,7 @@ import { JWT_SECRET, URL } from "../config";
 import Token from "../models/token.model";
 class AuthService {
     async register(data: RegisterInput) {
-        if (!data.name || !data.password || !data.email || !data.gender || !data.termsOfService) throw new CustomError("Please provide all required  fields");
+        if (!data.name || !data.password || !data.email) throw new CustomError("Please provide all required  fields");
 
         let user = await User.findOne({ email: data.email });
         if (user) throw new CustomError("email already exists");
