@@ -16,7 +16,9 @@ class SessionController {
         });
         res.cookie("sid", token, {
             expires,
-            httpOnly: true
+            httpOnly: true,
+            sameSite: "none",
+            secure: true
         });
         const sessionId = token;
 
