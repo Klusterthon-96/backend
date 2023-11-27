@@ -7,6 +7,7 @@ import "express-async-errors";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import treblle from "@treblle/express";
+import rateLimiter from "express-rate-limit";
 
 export const app = express();
 app.use(
@@ -24,6 +25,12 @@ app.use(
 );
 
 app.use(cookieParser());
+const limiter = rateLimiter({
+    windowMs: 1000,
+    max: 10
+});
+
+app.use(limiter);
 
 // const certificateFolder = "certificate";
 
