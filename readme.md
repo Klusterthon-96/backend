@@ -2,7 +2,6 @@
 
 ![Node.js](https://img.shields.io/badge/Node.js-18.x-green)
 ![TypeScript](https://img.shields.io/badge/TypeScript-4.x-blue)
-![Redis](https://img.shields.io/badge/Redis-6.x-red)
 
 This is the backend repo for agro assistance
 
@@ -12,7 +11,6 @@ This is the backend repo for agro assistance
 -   Typescript
 -   Express
 -   Mongoose
--   Redis
 
 ## Linters
 
@@ -24,7 +22,6 @@ This is the backend repo for agro assistance
 Before you begin, ensure you have met the following requirements:
 
 -   [Node.js](https://nodejs.org/) (18.x or higher) installed on your system.
--   [Redis](https://redis.io/) (6.x or higher) installed and running on your system.
 -   Clone or download this repository to your local machine.
 -   A code editor of your choice, like Visual Studio Code.
 

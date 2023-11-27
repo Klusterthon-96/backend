@@ -8,7 +8,7 @@ import User from "./../models/user.model";
 import MailService from "./mail.service";
 import CustomError from "../utils/custom-error";
 import { JWT_SECRET, URL } from "../config";
-import client from "../database/redis";
+import Token from "../models/token.model";
 class AuthService {
     async register(data: RegisterInput) {
         if (!data.name || !data.password || !data.email || !data.gender || !data.termsOfService) throw new CustomError("Please provide all required  fields");
@@ -57,10 +57,6 @@ class AuthService {
 
         user.password = "";
 
-        await client.del(user._id.toString());
-        const stringify = JSON.stringify(user);
-        await client.setEx(user._id.toString(), 85000, stringify);
-
         return {
             user,
             token: authTokens.accessToken,
@@ -71,27 +67,19 @@ class AuthService {
     async generateAuthTokens(data: GenerateTokenInput) {
         const { userId, role } = data;
 
-        const accessToken = JWT.sign({ id: userId, role }, JWT_SECRET!, {
-            expiresIn: "15m"
-        });
+        const accessToken = JWT.sign({ id: userId, role }, JWT_SECRET!, { expiresIn: "1 day" });
 
         const refreshToken = crypto.randomBytes(32).toString("hex");
         const hash = await bcrypt.hash(refreshToken, 10);
 
-        const refreshTokenJWT = JWT.sign({ userId, refreshToken }, JWT_SECRET!, {
-            expiresIn: "1 day"
-        });
+        const refreshTokenJWT = JWT.sign({ userId, refreshToken }, JWT_SECRET!, { expiresIn: "1 day" });
 
-        const tokenData = {
-            userId: userId,
+        await new Token({
+            userId,
             token: hash,
             type: "refresh_token",
-            expiresAt: Date.now() + ms("1 day")
-        };
-
-        const redisData = `refresh_token-${userId}`;
-
-        await client.set(redisData, JSON.stringify(tokenData));
+            expiresAt: Date.now() + ms("30 days")
+        }).save();
 
         return { accessToken, refreshToken: refreshTokenJWT };
     }
@@ -102,53 +90,44 @@ class AuthService {
         const decoded: any = JWT.verify(refreshTokenJWT, JWT_SECRET!);
         let { refreshToken } = decoded;
         const { userId } = decoded;
-        let user;
 
-        const userString = await client.get(userId);
+        const user = await User.findOne({ _id: userId });
+        if (!user) throw new CustomError("User does not exist");
+        const RTokens = await Token.find({ userId, type: "refresh_token" });
+        if (RTokens.length === 0) throw new CustomError("invalid or expired refresh token");
 
-        if (!userString) {
-            user = await User.findById(userId);
-            if (!user) throw new CustomError("User not found");
+        let tokenExists = false;
 
-            const userdata = JSON.stringify(user);
-            await client.setEx(userId, 86400, userdata);
-        } else {
-            user = JSON.parse(userString);
+        for (const token of RTokens) {
+            const isValid = await bcrypt.compare(refreshToken, token.token);
+
+            if (isValid) {
+                tokenExists = true;
+                break;
+            }
         }
-        const redisData = `refresh_token-${userId}`;
 
-        const token = await client.get(redisData);
-
-        if (!token) throw new CustomError("invalid or expired refresh token");
-
-        const parsedToken = JSON.parse(token);
-
-        const isValid = await bcrypt.compare(refreshToken, parsedToken.token);
-
-        if (!isValid) {
-            await client.del(redisData);
-        }
-        await client.del(redisData);
+        if (!tokenExists) throw new CustomError("invalid or expired refresh token");
 
         const accessToken = JWT.sign({ id: user._id, role: user.role }, JWT_SECRET!, {
-            expiresIn: "2hr"
+            expiresIn: "1 day"
         });
 
         refreshToken = crypto.randomBytes(32).toString("hex");
         const hash = await bcrypt.hash(refreshToken, 10);
 
         const refreshTokenJWTNew = JWT.sign({ userId, refreshToken }, JWT_SECRET!, {
-            expiresIn: "1 day"
+            expiresIn: "30 days"
         });
 
         const tokenData = {
             userId: userId,
             token: hash,
             type: "refresh_token",
-            expiresAt: Date.now() + ms("1 day")
+            expiresAt: Date.now() + ms("30 days")
         };
 
-        await client.set(redisData, JSON.stringify(tokenData));
+        await Token.create(tokenData);
 
         return { accessToken, refreshTokenJWTNew };
     }
@@ -158,20 +137,27 @@ class AuthService {
 
         const decoded: any = JWT.verify(refreshTokenJWT, JWT_SECRET!);
         const { refreshToken, userId } = decoded;
-        const redisData = `refresh_token-${userId}`;
-        const token = await client.get(redisData);
 
-        if (!token) throw new CustomError("invalid or expired refresh token or user does not exist");
-        const parsedToken = JSON.parse(token);
+        const user = await User.findOne({ _id: userId });
+        if (!user) throw new CustomError("User does not exist");
 
-        const isValid = await bcrypt.compare(refreshToken, parsedToken.token);
+        const RTokens = await Token.find({ userId, type: "refresh_token" });
+        if (RTokens.length === 0) throw new CustomError("invalid or expired refresh token");
 
-        if (!isValid) {
-            await client.del(redisData);
-            throw new CustomError("invalid or expired refresh token");
+        let tokenExists = false;
+
+        for (const token of RTokens) {
+            const isValid = await bcrypt.compare(refreshToken, token.token);
+
+            if (isValid) {
+                tokenExists = true;
+                await token.deleteOne();
+
+                break;
+            }
         }
-        await client.del(userId);
-        await client.del(redisData);
+
+        if (!tokenExists) throw new CustomError("invalid or expired refresh token");
 
         return true;
     }
@@ -183,32 +169,39 @@ class AuthService {
         if (!user) throw new CustomError("User with this Id not found");
 
         if (user.isVerified) throw new CustomError("Email is already verified");
-        const emailResetData = `email_verify-${userId}`;
-        const verificationInfo = await client.get(emailResetData);
+        const VToken = await Token.findOne({ userId, type: "verify_email" });
+        if (!VToken) throw new CustomError("invalid or expired password reset token");
 
-        const emailVerificationToken = crypto.createHash("sha256").update(verifyToken).digest("hex");
+        const isValid = await bcrypt.compare(verifyToken, VToken.token);
+        if (!isValid) throw new CustomError("invalid or expired password reset token");
 
-        if (!verificationInfo || emailVerificationToken !== verificationInfo) throw new CustomError("Token Invalid or expired");
-        user.isVerified = true;
-        await user.save();
-        await client.del(emailResetData);
-        await client.del(userId as string);
-        const stringify = JSON.stringify(user);
-        await client.setEx(userId as string, 83000, stringify);
+        await User.updateOne({ _id: userId }, { $set: { isVerified: true } }, { new: true });
+
+        await VToken.deleteOne();
+
         await new MailService(user).sendSuccessVerificationMail();
         return true;
     }
 
     async requestEmailVerification(userId: string) {
+        if (!userId) throw new CustomError("email is required");
         const user = await User.findById(userId);
 
         if (!user) throw new CustomError("user does not exist", 404);
         if (user.isVerified) throw new CustomError("email is already verified");
 
-        const verifyToken = await this.generateToken({
-            userId: user._id.toString(),
-            type: "email"
-        });
+        const token = await Token.findOne({ userId: user.id, type: "verify_email" });
+        if (token) await token.deleteOne();
+
+        const verifyToken = crypto.randomBytes(32).toString("hex");
+        const hash = await bcrypt.hash(verifyToken, 10);
+
+        await new Token({
+            token: hash,
+            userId: user.id,
+            type: "verify_email",
+            expiresAt: Date.now() + ms("1h")
+        }).save();
 
         const link = `${URL.CLIENT_URL}/email-verification?uid=${user._id}&verifyToken=${verifyToken}`;
 
@@ -224,10 +217,18 @@ class AuthService {
         const user = await User.findOne({ email });
         if (!user) throw new CustomError("email does not exist");
 
-        const resetToken = await this.generateToken({
-            userId: user._id.toString(),
-            type: "password"
-        });
+        const token = await Token.findOne({ userId: user.id, type: "reset_password" });
+        if (token) await token.deleteOne();
+
+        const resetToken = crypto.randomBytes(32).toString("hex");
+        const hash = await bcrypt.hash(resetToken, 10);
+
+        await new Token({
+            token: hash,
+            userId: user.id,
+            type: "reset_password",
+            expiresAt: Date.now() + ms("1h")
+        }).save();
 
         const link = `${URL.CLIENT_URL}/reset-password?uid=${user._id}&resetToken=${resetToken}`;
 
@@ -237,41 +238,18 @@ class AuthService {
         return true;
     }
 
-    async generateToken(data: generateToken) {
-        const { userId, type } = data;
-        if (type === "password") {
-            const resetToken = crypto.randomBytes(20).toString("hex");
-
-            const resetPasswordToken = crypto.createHash("sha256").update(resetToken).digest("hex");
-
-            const emailResetData = `reset_password-${userId}`;
-            await client.setEx(emailResetData, 900, resetPasswordToken);
-            return resetToken;
-        } else {
-            const emailToken = crypto.randomBytes(20).toString("hex");
-
-            const emailVerificationToken = crypto.createHash("sha256").update(emailToken).digest("hex");
-
-            const emailResetData = `email_verify-${userId}`;
-            await client.setEx(emailResetData, 900, emailVerificationToken);
-            return emailToken;
-        }
-    }
-
     async resetPassword(data: ResetPasswordInput) {
         const { userId, resetToken, password, confirmPassword } = data;
-        const resetPasswordToken = crypto.createHash("sha256").update(resetToken).digest("hex");
 
         const user = await User.findById(userId);
 
         if (!user) throw new CustomError("Token has expired or invalid");
 
-        const emailResetData = `reset_password-${userId}`;
-        const resetInfo = await client.get(emailResetData);
+        const RToken = await Token.findOne({ userId, type: "reset_password" });
+        if (!RToken) throw new CustomError("invalid or expired password reset token");
 
-        if (!resetInfo) throw new CustomError("Token has expired or invalid");
-
-        if (!resetInfo || resetInfo !== resetPasswordToken) throw new CustomError("Token has expired or invalid");
+        const isValid = await bcrypt.compare(resetToken, RToken.token);
+        if (!isValid) throw new CustomError("invalid or expired password reset token");
 
         if (password !== confirmPassword) throw new CustomError("Paasword does not match");
 
@@ -282,7 +260,6 @@ class AuthService {
         }
         user.password = password;
         user.save();
-        await client.del(emailResetData);
         await new MailService(user).sendSuccessPasswordReset();
         return true;
     }

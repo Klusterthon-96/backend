@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import User from "./../models/user.model";
 import CustomError from "./../utils/custom-error";
-import client from "../database/redis";
 
 class AdminService {
     async create(data: UserCreateInput) {
@@ -67,10 +66,6 @@ class AdminService {
     async delete(userId: string) {
         const user = await User.findByIdAndDelete({ _id: userId });
         if (!user) throw new CustomError("user does not exist");
-        const redisUser = await client.get(userId);
-        if (redisUser) await client.del(userId);
-        const userRefreshToken = await client.get(`refresh_token-${userId}`);
-        if (userRefreshToken) await client.del(`refresh_token-${userId}`);
         return user;
     }
 }

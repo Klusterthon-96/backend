@@ -52,10 +52,7 @@ const userSchema: mongoose.Schema = new mongoose.Schema(
             required: true,
             default: true
         },
-        resetPasswordToken: String,
-        resetPasswordExpire: Date,
-        emailVerificationToken: String,
-        emailVerificationExpire: Date
+      
     },
     {
         timestamps: true

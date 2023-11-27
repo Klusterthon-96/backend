@@ -1,9 +1,6 @@
 export const PORT = process.env.PORT;
 export const MONGO_URL = process.env.MONGODB_URI || "";
 export const MONGODB_URI_DEV = process.env.MONGODB_URI_DEV
-export const REDIS_HOST_DEV = process.env.REDIS_HOST_DEV;
-export const REDIS_HOST = process.env.REDIS_HOST;
-export const REDIS_PORT = process.env.REDIS_PORT;
 export const BCRYPT_SALT = process.env.BCRYPT_SALT;
 export const APP_NAME = "klusterthon-96";
 export const JWT_SECRET = process.env.JWT_SECRET;

@@ -11,15 +11,6 @@ services:
         networks:
             - agro_assistant_server
 
-    redis:
-        container_name: agro_assistant-redis
-        image: redis:latest
-        restart: always
-        ports:
-            - "6379:6379"
-        networks:
-            - agro_assistant_server
-
     api:
         build: .
         image: lekejosh/agro_assistant
@@ -42,14 +33,11 @@ services:
             MAILER_PASSWORD: "${MAILER_PASSWORD}"
             MAILER_SECURE: "${MAILER_SECURE}"
             DOCKER: "true"
-            REDIS_PORT: "${REDIS_PORT}"
-            REDIS_HOST: "redis"
             ML_URL: "${ML_URL}"
             TREBLLE_API_KEY: "${TREBLLE_API_KEY}"
             TREBLLE_PROJECT_ID: "${TREBLLE_PROJECT_ID}"
         depends_on:
             - mongo_db
-            - redis
         
 
     nginx:
