@@ -49,6 +49,17 @@ npm run watch (run this in one terminal in the project directory)
 npm run dev (this in another terminal in the project directory)
 ```
 
+### Setup Docker
+
+To use docker locally, follow these steps:
+
+1.  Make sure that you have Docker installed on your system
+2.  Run
+
+```bash
+npm run start:docker
+```
+
 ## APIs
 
 -   **Authentication**: Secure user registration, login, and JWT token generation.
