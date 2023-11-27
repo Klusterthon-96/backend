@@ -1,62 +1,44 @@
 name: Unit Tests
 
 on:
-    pull_request:
-        branches:
-            - main
-    push:
-        branches:
-            - main
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
 
 jobs:
-    tests:
-        runs-on: ubuntu-latest
+  tests:
+    runs-on: ubuntu-latest
 
-        services:
-            redis:
-                image: "redis:latest"
-                ports:
-                    - "6379:6379"
+    strategy:
+      matrix:
+        node-version: [18.x]
 
-        strategy:
-            matrix:
-                node-version: [18.x]
+    env:
+      PORT: ${{ secrets.PORT }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      MONGODB_URI: ${{ secrets.MONGODB_URI }}
+      MAILER_USER: ${{ secrets.MAILER_USER }}
+      MAILER_PORT: ${{ secrets.MAILER_PORT }}
+      MAILER_SECURE: ${{ secrets.MAILER_SECURE }}
+      MAILER_PASSWORD: ${{ secrets.MAILER_PASSWORD }}
+      MAILER_HOST: ${{ secrets.MAILER_HOST }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-        env:
-            PORT: ${{ secrets.PORT }}
-            JWT_SECRET: ${{ secrets.JWT_SECRET }}
-            MONGODB_URI: ${{ secrets.MONGODB_URI }}
-            MAILER_USER: ${{ secrets.MAILER_USER }}
-            MAILER_PORT: ${{ secrets.MAILER_PORT }}
-            MAILER_SECURE: ${{ secrets.MAILER_SECURE }}
-            MAILER_PASSWORD: ${{ secrets.MAILER_PASSWORD }}
-            MAILER_HOST: ${{ secrets.MAILER_HOST }}
-            REDIS_HOST: localhost
-            REDIS_PORT: 6379
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
 
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v2
+      - name: npm install
+        run: npm ci
 
-            - name: Use Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@v1
-              with:
-                  node-version: ${{ matrix.node-version }}
+      - name: npm build
+        run: npm run build
 
-            - name: Install Docker
-              run: sudo apt-get update && sudo apt-get -y install docker.io
-
-            - name: Start Redis server
-              run: docker run -d --name redis-server -p 6379:6379 redis:latest
-
-            - name: Wait for Redis to start
-              run: sleep 5
-
-            - name: Install dependencies
-              run: npm install
-
-            - name: Build
-              run: npm run build
-
-            - name: Run tests
-              run: npm test
+      - name: npm test
+        run: npm test
