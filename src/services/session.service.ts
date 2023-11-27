@@ -128,7 +128,6 @@ class SessionService {
         };
     }
     async convertInputToNumbers(temperature: string, humidity: string, ph: string, water: string) {
-        console.log(temperature, water, humidity, ph);
         const tempNumber: number | undefined = temperature === "cool" ? 16 : temperature === "mild" ? 21 : temperature === "warm" ? 26 : temperature === "hot" ? 30 : undefined;
         const humiNumber: number | undefined =
             humidity === "low" ? 10 : humidity === "moderate" ? 30 : humidity === "average" ? 45 : humidity === "high" ? 81 : humidity === "very high" ? 90 : undefined;

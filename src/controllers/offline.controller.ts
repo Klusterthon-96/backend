@@ -37,6 +37,8 @@ class OfflineController {
         } else if (req.body.phoneNumber.startsWith("+249")) {
             session!.query.Country = "Sudan";
             await session!.save();
+        }else{
+            res.end()
         }
         if (text.length === 12 || text.length === 11) {
             if (session && session.query) {
@@ -80,11 +82,12 @@ class OfflineController {
                 } else if (label === "13") {
                     session.query.label = "watermelon";
                     await session.save();
+                }else{
+                    res.end()
                 }
                 const query = await Offline.findOne({ sessionId: req.body.sessionId });
 
                 if (query) {
-                    console.log(query);
                     try {
                         const response = await axios.post(URL.ML_URL!, {
                             temperature: query.query.temperature,
@@ -94,7 +97,6 @@ class OfflineController {
                             label: query.query.label,
                             Country: query.query.Country
                         });
-                        console.log(response.data.harvest_season);
                         var result = response.data.harvest_season;
                     } catch (error) {
                         console.log(error);
@@ -116,6 +118,8 @@ class OfflineController {
             } else if (temperatureCode === "4") {
                 session!.query.temperature = 30;
                 await session!.save();
+            }else{
+                res.end()
             }
         }
 
@@ -135,6 +139,8 @@ class OfflineController {
             } else if (humidityCode === "5") {
                 session!.query.humidity = 85;
                 await session!.save();
+            }else{
+                res.end()
             }
         }
 
@@ -154,6 +160,8 @@ class OfflineController {
             } else if (phCode === "5") {
                 session!.query.ph = 11;
                 await session!.save();
+            }else{
+                res.end()
             }
         }
         async function handleWaterInput(waterCode: string) {
@@ -166,11 +174,12 @@ class OfflineController {
             } else if (waterCode === "3") {
                 session!.query.water_availability = 105;
                 await session!.save();
+            }else{
+                 res.end();
             }
         }
 
         if (text.length === 0) {
-            // Initial welcome message
             response = "CON Hi comrade, Welcome to your Agro Assistant \n\n What will you like to do today?\n";
             response += "1. Enter Crop details\n";
             response += "2. Contact support\n";
@@ -227,94 +236,6 @@ class OfflineController {
             response = "END Harvest season is \n\n";
             response += `${result}`;
         }
-
-        // if (text === "") {
-        //     // Initial welcome message
-        //     response = "CON Hi comrade, Welcome to your Agro Assistant \n\n What will you like to do today?\n";
-        //     response += "1. Enter Crop details\n";
-        //     response += "2. Contact support\n";
-        // } else if (text === "1") {
-        //     // Ask for temperature input
-        //     response = "CON  What is your temperature \n";
-        //     response += "1. Cool: 15-18.99 \n";
-        //     response += "2. Mild: 19-23.99 \n";
-        //     response += "3. Warm: 24-28.99 \n";
-        //     response += "4. Hot: 29 and above\n";
-        // } else if (text.startsWith("1*") && text.length <= 3) {
-        //     const temperatureCode = text.split("*")[1];
-        //     console.log(temperatureCode);
-        //     handleTemperatureInput(temperatureCode);
-        //     console.log(query);
-        //     response = "CON What is your Humidity? \n";
-        //     response += "1. Low: 0-19.99 \n";
-        //     response += "2. Moderate: 20-39.99\n";
-        //     response += "3. Average: 40-59.99\n";
-        //     response += "4. Very High: 80 and above";
-        // } else if ((text.startsWith("1*1*") || text.startsWith("1*2*") || text.startsWith("1*3*") || text.startsWith("1*4*")) && text.length <= 5) {
-        //     const humidityCode = text.split("*")[2];
-        //     handleHumidityInput(humidityCode);
-        //     console.log(query);
-        //     response = "CON What is your pH level? \n";
-        //     response += "1. Strongly Acidic: 0-1.99 \n";
-        //     response += "2. Moderately Acidic: 2-5.99\n";
-        //     response += "3. Neutral: 6-6.99\n";
-        //     response += "4. Moderately Alkaline: 7-9.99\n";
-        //     response += "5. Highly Alkaline: 10 and above";
-        // } else if (
-        //     (text.startsWith("1*1*1*") ||
-        //         text.startsWith("1*2*1*") ||
-        //         text.startsWith("1*3*1*") ||
-        //         text.startsWith("1*4*1*") ||
-        //         text.startsWith("1*1*2*") ||
-        //         text.startsWith("1*2*2*") ||
-        //         text.startsWith("1*3*2*") ||
-        //         text.startsWith("1*4*2*") ||
-        //         text.startsWith("1*1*3*") ||
-        //         text.startsWith("1*2*3*") ||
-        //         text.startsWith("1*3*3*") ||
-        //         text.startsWith("1*4*3*") ||
-        //         text.startsWith("1*1*4*") ||
-        //         text.startsWith("1*2*4*") ||
-        //         text.startsWith("1*3*4*") ||
-        //         text.startsWith("1*4*4*") ||
-        //         text.startsWith("1*1*5*") ||
-        //         text.startsWith("1*2*5*") ||
-        //         text.startsWith("1*3*5*") ||
-        //         text.startsWith("1*4*5*")) &&
-        //     text.length <= 7
-        // ) {
-        //     const phCode = text.split("*")[3];
-        //     handlePhInput(phCode);
-        //     response = "CON What is your water availability? \n\n";
-        //     response += "1. Low: 0-49.99\n";
-        //     response += "2. 50-99.99\n";
-        //     response += "3. 100 and above\n";
-        // } else if (
-        //     (text.startsWith("1*1*1*1*") ||
-        //         text.startsWith("1*2*1*") ||
-        //         text.startsWith("1*3*1*") ||
-        //         text.startsWith("1*4*1*") ||
-        //         text.startsWith("1*1*2*") ||
-        //         text.startsWith("1*2*2*") ||
-        //         text.startsWith("1*3*2*") ||
-        //         text.startsWith("1*4*2*") ||
-        //         text.startsWith("1*1*3*") ||
-        //         text.startsWith("1*2*3*") ||
-        //         text.startsWith("1*3*3*") ||
-        //         text.startsWith("1*4*3*") ||
-        //         text.startsWith("1*1*4*") ||
-        //         text.startsWith("1*2*4*") ||
-        //         text.startsWith("1*3*4*") ||
-        //         text.startsWith("1*4*4*") ||
-        //         text.startsWith("1*1*5*") ||
-        //         text.startsWith("1*2*5*") ||
-        //         text.startsWith("1*3*5*") ||
-        //         text.startsWith("1*4*5*")) &&
-        //     text.length <= 7
-        // ) {
-        //     // Handle other cases if needed
-        // }
-
         res.set("Content-Type", "text/plain");
         res.send(response);
     }
