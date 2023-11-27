@@ -204,7 +204,7 @@ class AuthService {
             expiresAt: Date.now() + ms("1h")
         }).save();
 
-        const link = `${URL.CLIENT_URL}/email-verification?uid=${user._id}&verifyToken=${verifyToken}`;
+        const link = `${URL.CLIENT_URL}/auth/email-verification/${verifyToken}`;
 
         // Send Mail
         await new MailService(user).sendEmailVerificationMail(link);
