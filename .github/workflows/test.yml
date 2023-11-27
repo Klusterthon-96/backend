@@ -25,6 +25,7 @@ jobs:
       MAILER_SECURE: ${{ secrets.MAILER_SECURE }}
       MAILER_PASSWORD: ${{ secrets.MAILER_PASSWORD }}
       MAILER_HOST: ${{ secrets.MAILER_HOST }}
+      ML_URL: ${{secrets.ML_URL}}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2

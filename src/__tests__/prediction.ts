@@ -35,11 +35,11 @@ export const predictionTest = () => {
                     .set("Cookie", [`sid=${sid}`])
                     .set("Authorization", `Bearer ${accessToken}`)
                     .send({
-                        temperature: 19.46233971,
-                        humidity: 15.22538951,
-                        ph: 7.976607593,
-                        water_availability: 170.238484,
-                        label: "Chickpea",
+                        temperature: "warm",
+                        humidity: "low",
+                        ph: "moderately alkaline",
+                        water_availability: "high",
+                        label: "chickpea",
                         country: "Nigeria"
                     });
                 expect(response.status).toBe(200);
@@ -61,11 +61,11 @@ export const predictionTest = () => {
         describe("Continue One Session", () => {
             it("should return a 200 status code", async () => {
                 const response = await supertest(app).put(`/api/v1/session/${sessionId}`).set("Authorization", `Bearer ${accessToken}`).send({
-                    temperature: 19.46233971,
-                    humidity: 15.22538951,
-                    ph: 7.976607593,
-                    water_availability: 170.238484,
-                    label: "Chickpea",
+                    temperature: "warm",
+                    humidity: "low",
+                    ph: "moderately alkaline",
+                    water_availability: "high",
+                    label: "chickpea",
                     country: "Nigeria"
                 });
                 expect(response.status).toBe(200);
