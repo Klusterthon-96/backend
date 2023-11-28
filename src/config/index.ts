@@ -12,7 +12,7 @@ export const ROLE = {
 };
 
 export const URL = {
-    CLIENT_URL: process.env.CLIENT_URL
+    CLIENT_URL: process.env.CLIENT_URL,
     ML_URL: process.env.ML_URL
 };
 export const MAILER = {
