@@ -15,7 +15,7 @@ class SessionService {
             }
 
             const decoded = JWT.verify(sessionId, JWT_SECRET!) as JwtPayload;
-            let session = await Session.findOne({ userId: userId, _id: decoded.id });
+            // let session = await Session.findOne({ userId: userId, _id: decoded.id });
 
             const query = await this.convertInputToNumbers(data.temperature, data.humidity, data.ph, data.water_availability);
             if (query.humiNumber === undefined || query.phNumber === undefined || query.tempNumber === undefined || query.waterNumber === undefined)
@@ -36,19 +36,15 @@ class SessionService {
                 label: data.label,
                 Country: data.Country
             });
-            if (session) {
-                session.query_result.push({ query: request, result: response.data.harvest_season });
-                await session.save();
-            } else {
-                const sessionIdAsObjectId = new Types.ObjectId(decoded.id);
 
-                session = await Session.create({
-                    _id: sessionIdAsObjectId,
-                    userId: userId,
-                    name: `Prediction for ${data.label}`,
-                    query_result: [{ query: request, result: response.data.harvest_season }]
-                });
-            }
+            const sessionIdAsObjectId = new Types.ObjectId(decoded.id);
+
+            await Session.create({
+                _id: sessionIdAsObjectId,
+                userId: userId,
+                name: `Prediction for ${data.label}`,
+                query_result: { query: request, result: response.data.harvest_season }
+            });
 
             return { result: response.data.harvest_season };
         } catch (error) {
@@ -62,43 +58,43 @@ class SessionService {
         if (!session) throw new CustomError("Session Not found", 404);
         return session;
     }
-    async continueSession(data: PredictInput, userId: string, sessionId: string) {
-        try {
-            if (!data.Country || !data.humidity || !data.label || !data.ph || !data.temperature || !data.water_availability) {
-                throw new CustomError("You're not passing in the correct parameters");
-            }
-            const session = await Session.findOne({ userId: userId, _id: sessionId });
+    // async continueSession(data: PredictInput, userId: string, sessionId: string) {
+    //     try {
+    //         if (!data.Country || !data.humidity || !data.label || !data.ph || !data.temperature || !data.water_availability) {
+    //             throw new CustomError("You're not passing in the correct parameters");
+    //         }
+    //         const session = await Session.findOne({ userId: userId, _id: sessionId });
 
-            if (!session || session === null) throw new CustomError("Session Not found", 404);
+    //         if (!session || session === null) throw new CustomError("Session Not found", 404);
 
-            const query = await this.convertInputToNumbers(data.temperature, data.humidity, data.ph, data.water_availability);
+    //         const query = await this.convertInputToNumbers(data.temperature, data.humidity, data.ph, data.water_availability);
 
-            if (query.humiNumber === undefined || query.phNumber === undefined || query.tempNumber === undefined || query.waterNumber === undefined)
-                throw new CustomError("You're not passing the correct parameters");
-            const request = {
-                temperature: query.tempNumber,
-                humidity: query.humiNumber,
-                ph: query.phNumber,
-                water_availability: query.waterNumber,
-                label: data.label,
-                Country: data.Country
-            };
+    //         if (query.humiNumber === undefined || query.phNumber === undefined || query.tempNumber === undefined || query.waterNumber === undefined)
+    //             throw new CustomError("You're not passing the correct parameters");
+    //         const request = {
+    //             temperature: query.tempNumber,
+    //             humidity: query.humiNumber,
+    //             ph: query.phNumber,
+    //             water_availability: query.waterNumber,
+    //             label: data.label,
+    //             Country: data.Country
+    //         };
 
-            const response = await axios.post(URL.ML_URL!, {
-                temperature: query.tempNumber,
-                humidity: query.humiNumber,
-                ph: query.phNumber,
-                water_availability: query.waterNumber,
-                label: data.label,
-                Country: data.Country
-            });
-            session.query_result.push({ query: request, result: response.data.harvest_season });
-            await session.save();
-            return { result: response.data.harvest_season };
-        } catch (error) {
-            throw new CustomError("Error Generating Result", 500);
-        }
-    }
+    //         const response = await axios.post(URL.ML_URL!, {
+    //             temperature: query.tempNumber,
+    //             humidity: query.humiNumber,
+    //             ph: query.phNumber,
+    //             water_availability: query.waterNumber,
+    //             label: data.label,
+    //             Country: data.Country
+    //         });
+    //         session.query_result = { query: request, result: response.data.harvest_season };
+    //         await session.save();
+    //         return { result: response.data.harvest_season };
+    //     } catch (error) {
+    //         throw new CustomError("Error Generating Result", 500);
+    //     }
+    // }
     async getAllSession(pagination: PaginationInput, userId: string) {
         const user = await User.findById(userId);
         if (!user) throw new CustomError("User not found", 404);

@@ -13,7 +13,7 @@ export interface ISession extends mongoose.Document {
             Country: string;
         };
         result: string;
-    }[];
+    };
     createdAt: Date;
     updatedAt: Date;
 }
@@ -28,12 +28,10 @@ const sessionSchema: mongoose.Schema = new mongoose.Schema(
         name: {
             type: String
         },
-        query_result: [
-            {
-                query: { temperature: Number, humidity: Number, ph: Number, water_availability: Number, label: String, Country: String },
-                result: String
-            }
-        ]
+        query_result: {
+            query: { temperature: Number, humidity: Number, ph: Number, water_availability: Number, label: String, Country: String },
+            result: String
+        }
     },
     {
         timestamps: true

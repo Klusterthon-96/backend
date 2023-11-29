@@ -58,19 +58,6 @@ export const predictionTest = () => {
                 expect(response.status).toBe(200);
             });
         });
-        describe("Continue One Session", () => {
-            it("should return a 200 status code", async () => {
-                const response = await supertest(app).put(`/api/v1/session/${sessionId}`).set("Authorization", `Bearer ${accessToken}`).send({
-                    temperature: "warm",
-                    humidity: "low",
-                    ph: "moderately alkaline",
-                    water_availability: "high",
-                    label: "chickpea",
-                    country: "Nigeria"
-                });
-                expect(response.status).toBe(200);
-            });
-        });
         describe("Delete One Session", () => {
             it("should return a 200 status code", async () => {
                 const response = await supertest(app).delete(`/api/v1/session/${sessionId}`).set("Authorization", `Bearer ${accessToken}`);

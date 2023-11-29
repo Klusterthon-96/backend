@@ -45,21 +45,21 @@ class SessionController {
         const result = await sessionService.getSession(req.$user._id, req.params.id);
         res.status(200).send(response("Session gotten successfully", result));
     }
-    async continueSession(req: Request, res: Response) {
-        const predictInput: PredictInput = {
-            temperature: req.body.temperature,
-            humidity: req.body.humidity,
-            ph: req.body.ph,
-            water_availability: req.body.water_availability,
-            label: req.body.label.toLowerCase(),
-            Country: req.body.country
-                .split(" ")
-                .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
-                .join(" ")
-        };
-        const result = await sessionService.continueSession(predictInput, req.$user._id, req.params.id);
-        res.status(200).send(response("Session", result));
-    }
+    // async continueSession(req: Request, res: Response) {
+    //     const predictInput: PredictInput = {
+    //         temperature: req.body.temperature,
+    //         humidity: req.body.humidity,
+    //         ph: req.body.ph,
+    //         water_availability: req.body.water_availability,
+    //         label: req.body.label.toLowerCase(),
+    //         Country: req.body.country
+    //             .split(" ")
+    //             .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+    //             .join(" ")
+    //     };
+    //     const result = await sessionService.continueSession(predictInput, req.$user._id, req.params.id);
+    //     res.status(200).send(response("Session", result));
+    // }
     async getAllSession(req: Request, res: Response) {
         const result = await sessionService.getAllSession(req.query, req.$user._id);
         res.status(200).send(response("All Session", result));
