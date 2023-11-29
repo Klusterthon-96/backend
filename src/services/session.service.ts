@@ -42,7 +42,12 @@ class SessionService {
             } else {
                 const sessionIdAsObjectId = new Types.ObjectId(decoded.id);
 
-                session = await Session.create({ _id: sessionIdAsObjectId, userId: userId, query_result: [{ query: request, result: response.data.harvest_season }] });
+                session = await Session.create({
+                    _id: sessionIdAsObjectId,
+                    userId: userId,
+                    name: `Prediction for ${data.label}`,
+                    query_result: [{ query: request, result: response.data.harvest_season }]
+                });
             }
 
             return { result: response.data.harvest_season };
