@@ -171,10 +171,10 @@ class AuthService {
 
         if (user.isVerified) throw new CustomError("Email is already verified");
         const VToken = await Token.findOne({ userId, type: "verify_email" });
-        if (!VToken) throw new CustomError("invalid or expired password reset token");
+        if (!VToken) throw new CustomError("invalid or expired email verification token");
 
         const isValid = await bcrypt.compare(verifyToken, VToken.token);
-        if (!isValid) throw new CustomError("invalid or expired password reset token");
+        if (!isValid) throw new CustomError("invalid or expired email verification reset token");
 
         await User.updateOne({ _id: userId }, { $set: { isVerified: true } }, { new: true });
 
