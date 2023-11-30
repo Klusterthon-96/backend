@@ -67,7 +67,7 @@ class AuthController {
     }
 
     async verifyEmail(req: Request, res: Response) {
-        const result = await AuthService.verifyEmail(req.body, req.$user._id);
+        const result = await AuthService.verifyEmail(req.body);
         res.status(200).send(response("email verified successfully", result));
     }
 

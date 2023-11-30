@@ -14,7 +14,7 @@ router.get("/refresh-access-token", AuthCtrl.refreshAccessToken);
 
 router.delete("/logout", AuthCtrl.logout);
 
-router.put("/email", auth(ROLE.USER), AuthCtrl.verifyEmail);
+router.put("/email", AuthCtrl.verifyEmail);
 
 router.get("/email", auth(ROLE.USER), AuthCtrl.requestEmailVerification);
 

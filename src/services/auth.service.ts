@@ -163,8 +163,8 @@ class AuthService {
         return true;
     }
 
-    async verifyEmail(data: VerifyEmailInput, userId: string) {
-        const { verifyToken } = data;
+    async verifyEmail(data: VerifyEmailInput) {
+        const { userId, verifyToken } = data;
 
         const user = await User.findById(userId);
         if (!user) throw new CustomError("User with this Id not found");
@@ -204,7 +204,7 @@ class AuthService {
             expiresAt: Date.now() + ms("1h")
         }).save();
 
-        const link = `${URL.CLIENT_URL}/auth/email-verification/${verifyToken}`;
+        const link = `${URL.CLIENT_URL}/auth/email-verification/${userId}/${verifyToken}`;
 
         // Send Mail
         await new MailService(user).sendEmailVerificationMail(link);
