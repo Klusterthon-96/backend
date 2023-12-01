@@ -8,6 +8,7 @@ import cookieParser from "cookie-parser";
 import session from "express-session";
 import treblle from "@treblle/express";
 import rateLimiter from "express-rate-limit";
+import { Server } from "socket.io";
 
 export const app = express();
 
@@ -63,6 +64,28 @@ errorMiddleware(app);
 import { HTTP } from "./config";
 
 import "./database/index";
+import sessionService from "./services/session.service";
+
+const io = new Server(httpServer, {
+    cors: {
+        origin: ["http://localhost:3000", "https://agro-assistant.netlify.app"],
+        methods: ["GET", "POST"]
+    }
+});
+
+io.on("connection", (socket) => {
+    console.log(`User connect: ${socket.id}`);
+
+    socket.on(`session`, async (data) => {
+        console.log(data);
+
+        // Assuming sessionService.getSession returns a Promise
+        const result = await sessionService.getSession(data.userId, data._id);
+
+        // Emit the "session received" event to the same socket that created the session
+        socket.emit("session received", result);
+    });
+});
 
 httpServer.listen(HTTP, async () => {
     console.log(`:::> 🚀 Server ready at http://localhost:${HTTP}`);

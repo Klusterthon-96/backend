@@ -6,6 +6,7 @@ import CustomError from "../utils/custom-error";
 import User from "../models/user.model";
 import axios from "axios";
 import { Types } from "mongoose";
+import session from "express-session";
 
 class SessionService {
     async newSession(data: PredictInput, userId: string, sessionId: string) {
@@ -46,7 +47,7 @@ class SessionService {
                 query_result: { query: request, result: response.data.harvest_season }
             });
 
-            return { result: response.data.harvest_season };
+            return { result: response.data.harvest_season, userId: userId, _id: decoded.id };
         } catch (error) {
             throw new CustomError("Error Generating prediction", 500);
         }
@@ -98,6 +99,7 @@ class SessionService {
     async getAllSession(pagination: PaginationInput, userId: string) {
         const user = await User.findById(userId);
         if (!user) throw new CustomError("User not found", 404);
+
         const { limit = 10, next } = pagination;
         let query = {};
 
@@ -110,9 +112,11 @@ class SessionService {
             };
         }
 
-        const sessions = await Session.find({ userId, ...query }, { __v: 0 })
-            .sort({ createdAt: 1, _id: 1 })
+        const sessionsQuery = Session.find({ userId, ...query }, { __v: 0 })
+            .sort({ createdAt: -1, _id: -1 })
             .limit(Number(limit) + 1);
+
+        const sessions = await sessionsQuery.exec();
 
         const hasNext = sessions.length > limit;
         if (hasNext) sessions.pop();
@@ -128,6 +132,7 @@ class SessionService {
             }
         };
     }
+
     async convertInputToNumbers(temperature: string, humidity: string, ph: string, water: string) {
         const tempNumber: number | undefined = temperature === "cool" ? 16 : temperature === "mild" ? 21 : temperature === "warm" ? 26 : temperature === "hot" ? 30 : undefined;
         const humiNumber: number | undefined =
