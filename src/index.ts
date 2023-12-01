@@ -77,12 +77,7 @@ io.on("connection", (socket) => {
     console.log(`User connect: ${socket.id}`);
 
     socket.on(`session`, async (data) => {
-        console.log(data);
-
-        // Assuming sessionService.getSession returns a Promise
         const result = await sessionService.getSession(data.userId, data._id);
-
-        // Emit the "session received" event to the same socket that created the session
         socket.emit("session received", result);
     });
 });
