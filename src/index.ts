@@ -68,7 +68,7 @@ import sessionService from "./services/session.service";
 
 const io = new Server(httpServer, {
     cors: {
-        origin: ["http://localhost:3000", "https://agro-assistant.netlify.app"],
+        origin: "https://agro-assistant.netlify.app",
         methods: ["GET", "POST"]
     }
 });
